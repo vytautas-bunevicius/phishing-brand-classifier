@@ -1,12 +1,13 @@
 """
 Training script for phishing brand classifier.
+
+Uses modern Python 3.10+ syntax and Pydantic Settings.
 """
 
 import argparse
 import json
 import random
 from pathlib import Path
-from typing import Dict
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -19,7 +20,7 @@ from tqdm import tqdm
 import sys
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
-from phishing_classifier.config import Config, get_config
+from phishing_classifier.config import Settings, get_settings
 from phishing_classifier.preprocessing import create_dataloaders, get_transforms
 from phishing_classifier.models import create_model, get_loss_function
 from phishing_classifier.evaluation import MetricsCalculator
@@ -43,7 +44,7 @@ def train_epoch(
     optimizer: torch.optim.Optimizer,
     device: str,
     epoch: int
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Train for one epoch."""
     model.train()
 
@@ -101,7 +102,7 @@ def validate(
     criterion: nn.Module,
     device: str,
     epoch: int
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Validate model."""
     model.eval()
 
@@ -155,14 +156,14 @@ def validate(
     }
 
 
-def train(config: Config) -> None:
+def train(config: Settings) -> None:
     """Main training function."""
     print("="*80)
     print("PHISHING BRAND CLASSIFIER - TRAINING")
     print("="*80)
 
-    # Set device
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # Set device (use auto-detection from settings)
+    device = config.device_auto
     print(f"\nDevice: {device}")
 
     if device == 'cuda':
@@ -391,8 +392,10 @@ def main():
 
     args = parser.parse_args()
 
-    # Get config and update with args
-    config = get_config()
+    # Get settings and update with args
+    config = get_settings()
+
+    # Update config based on command-line arguments
     config.model.backbone = args.backbone
     config.model.epochs = args.epochs
     config.data.batch_size = args.batch_size

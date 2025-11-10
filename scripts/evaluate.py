@@ -1,11 +1,12 @@
 """
 Evaluation script for phishing brand classifier.
+
+Uses modern Python 3.10+ syntax and Pydantic Settings.
 """
 
 import argparse
 import json
 from pathlib import Path
-from typing import Dict
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -17,7 +18,7 @@ from tqdm import tqdm
 import sys
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
-from phishing_classifier.config import Config, get_config
+from phishing_classifier.config import Settings, get_settings
 from phishing_classifier.preprocessing import create_dataloaders, get_transforms
 from phishing_classifier.models import create_model
 from phishing_classifier.evaluation import (
@@ -35,8 +36,8 @@ def evaluate_model(
     model: torch.nn.Module,
     test_loader: torch.utils.data.DataLoader,
     device: str,
-    config: Config
-) -> Dict:
+    config: Settings
+) -> dict:
     """
     Evaluate model on test set.
 
@@ -111,7 +112,7 @@ def evaluate_model(
     return results
 
 
-def print_results(results: Dict, config: Config) -> None:
+def print_results(results: dict, config: Settings) -> None:
     """Print evaluation results."""
     metrics = results['metrics']
 
@@ -161,7 +162,7 @@ def print_results(results: Dict, config: Config) -> None:
     print(f"  TPR: {opt_thresh['tpr']:.4f}")
 
 
-def save_results(results: Dict, config: Config, backbone: str) -> None:
+def save_results(results: dict, config: Settings, backbone: str) -> None:
     """Save evaluation results."""
     results_dir = config.results_dir
     results_dir.mkdir(parents=True, exist_ok=True)
@@ -261,14 +262,14 @@ def main():
     print("PHISHING BRAND CLASSIFIER - EVALUATION")
     print("="*80)
 
-    # Get config
-    config = get_config()
+    # Get settings
+    config = get_settings()
     config.model.backbone = args.backbone
     config.data.data_dir = Path(args.data_dir)
     config.data.batch_size = args.batch_size
 
-    # Set device
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # Set device (use auto-detection from settings)
+    device = config.device_auto
     print(f"\nDevice: {device}")
 
     # Load model

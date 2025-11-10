@@ -2,7 +2,7 @@
 # Phishing Brand Classifier - Data Exploration
 
 This notebook explores the phishing detection dataset and performs
-comprehensive data analysis.
+comprehensive data analysis using modern Python 3.10+ syntax.
 
 To run this as a notebook, use jupytext:
     jupytext --to notebook 01_data_exploration.py
@@ -10,6 +10,8 @@ To run this as a notebook, use jupytext:
 """
 
 # %%
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 sys.path.append(str(Path.cwd().parent / "src"))
