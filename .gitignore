@@ -205,3 +205,16 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Project Specific - Phishing Classifier
+data/raw/
+data/processed/
+*.csv
+*.parquet
+models/checkpoints/*.pth
+models/checkpoints/*.pt
+!models/checkpoints/.gitkeep
+!models/results/.gitkeep
+runs/
+*.tmp
+temp/
