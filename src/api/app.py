@@ -12,12 +12,10 @@ import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from typing import Dict, List, Optional
+from typing import List, Optional
 
-import torch
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from PIL import Image
 from pydantic import BaseModel, Field
 

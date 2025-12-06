@@ -1,9 +1,8 @@
 """Data utilities for downloading and preparing the dataset."""
 
-import os
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -38,7 +37,7 @@ def download_dataset(
     ]
 
     try:
-        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        subprocess.run(command, capture_output=True, text=True, check=True)
         print(f"Dataset downloaded successfully to {destination}")
         return True
     except subprocess.CalledProcessError as e:

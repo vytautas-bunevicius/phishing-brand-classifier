@@ -1,10 +1,8 @@
 """Dataset classes for phishing brand classification."""
 
-import os
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
-import numpy as np
 import pandas as pd
 import torch
 from PIL import Image
@@ -83,18 +81,18 @@ class PhishingDataset(Dataset):
     def __len__(self) -> int:
         return len(self.df)
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int, str]:
+    def __getitem__(self, idx: int) -> Tuple[Any, int, str]:
         """Get a single sample.
 
         Returns:
             Tuple of (image_tensor, label_idx, image_path)
         """
         row = self.df.iloc[idx]
-        image_path = row["image_path"]
-        label_idx = row["label_idx"]
+        image_path: str = row["image_path"]
+        label_idx: int = int(row["label_idx"])
 
         # Load image
-        image = Image.open(image_path).convert("RGB")
+        image: Any = Image.open(image_path).convert("RGB")
 
         # Apply transforms
         if self.transform is not None:
@@ -116,11 +114,11 @@ class PhishingDataset(Dataset):
         weights = total / (len(class_counts) * class_counts.values)
         return torch.FloatTensor(weights)
 
-    def get_sample_weights(self) -> torch.Tensor:
+    def get_sample_weights(self) -> List[float]:
         """Get per-sample weights for WeightedRandomSampler."""
         class_weights = self.get_class_weights()
-        sample_weights = self.df["label_idx"].map(lambda x: class_weights[x].item())
-        return torch.FloatTensor(sample_weights.values)
+        sample_weights = self.df["label_idx"].map(lambda x: float(class_weights[x].item()))
+        return sample_weights.tolist()
 
 
 def create_dataloaders(

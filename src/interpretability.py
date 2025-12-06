@@ -15,7 +15,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from PIL import Image
 
-from src.data.transforms import AlbumentationsTransform, denormalize, get_val_transforms
+from src.data.transforms import AlbumentationsTransform, get_val_transforms
 
 
 class GradCAM:
@@ -125,7 +125,7 @@ class GradCAM:
 
         cam_resized = np.array(
             PILImage.fromarray((cam * 255).astype(np.uint8)).resize(
-                (image.shape[1], image.shape[0]), PILImage.BILINEAR
+                (image.shape[1], image.shape[0]), PILImage.Resampling.BILINEAR
             )
         ) / 255.0
 

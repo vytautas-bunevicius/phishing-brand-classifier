@@ -2,7 +2,6 @@
 
 import pytest
 import torch
-import numpy as np
 
 from src.models.classifier import BrandClassifier, create_model
 from src.models.losses import FocalLoss, LabelSmoothingCrossEntropy

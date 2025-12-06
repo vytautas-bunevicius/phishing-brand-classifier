@@ -3,8 +3,6 @@
 import argparse
 import json
 import logging
-import os
-import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Tuple
@@ -21,11 +19,11 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from src.data.dataset import PhishingDataset, create_dataloaders
+from src.data.dataset import create_dataloaders
 from src.data.transforms import AlbumentationsTransform, get_train_transforms, get_val_transforms
 from src.data.utils import prepare_dataset_splits, scan_dataset
-from src.models.classifier import BrandClassifier, create_model
-from src.models.losses import FocalLoss, create_loss_function
+from src.models.classifier import create_model
+from src.models.losses import FocalLoss
 from src.utils.metrics import MetricTracker, calculate_metrics, find_optimal_threshold
 
 
@@ -325,7 +323,6 @@ def train(
             mode="max",
             factor=0.5,
             patience=5,
-            verbose=True,
         )
     else:
         scheduler = None
@@ -366,7 +363,7 @@ def train(
 
         # Update scheduler
         if scheduler is not None:
-            if scheduler_type == "plateau":
+            if isinstance(scheduler, ReduceLROnPlateau):
                 scheduler.step(val_f1)
             else:
                 scheduler.step()
@@ -452,7 +449,7 @@ def train(
         class_names=class_names,
     )
 
-    logger.info(f"\nTest Results:")
+    logger.info("\nTest Results:")
     logger.info(f"Loss: {test_loss:.4f}, Accuracy: {test_acc:.4f}, F1: {test_f1:.4f}")
     logger.info(f"\n{test_metrics['classification_report']}")
 

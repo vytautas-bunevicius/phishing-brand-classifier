@@ -1,13 +1,12 @@
 """Image transforms for training and evaluation."""
 
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 import albumentations as A
 import numpy as np
 import torch
 from albumentations.pytorch import ToTensorV2
 from PIL import Image
-from torchvision import transforms
 
 
 def get_train_transforms(
@@ -63,7 +62,7 @@ def get_train_transforms(
                         p=1.0,
                     ),
                     A.GaussNoise(
-                        var_limit=(10.0, 50.0),
+                        std_range=(0.1, 0.3),
                         p=1.0,
                     ),
                 ],
@@ -72,8 +71,8 @@ def get_train_transforms(
             # Quality degradation (simulates different screenshot qualities)
             A.OneOf(
                 [
-                    A.ImageCompression(quality_lower=60, quality_upper=100, p=1.0),
-                    A.Downscale(scale_min=0.5, scale_max=0.9, p=1.0),
+                    A.ImageCompression(quality_range=(60, 100), p=1.0),
+                    A.Downscale(scale_range=(0.5, 0.9), p=1.0),
                 ],
                 p=0.3,
             ),

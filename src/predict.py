@@ -4,16 +4,15 @@ import argparse
 import json
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Union
 
 import numpy as np
 import torch
-import yaml
 from PIL import Image
 from tqdm import tqdm
 
 from src.data.transforms import AlbumentationsTransform, get_val_transforms
-from src.models.classifier import BrandClassifier, create_model
+from src.models.classifier import BrandClassifier
 
 
 class PhishingClassifier:

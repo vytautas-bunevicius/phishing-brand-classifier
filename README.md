@@ -49,8 +49,7 @@ phishing-brand-classifier/
 │   ├── logs/                 # Training logs
 │   └── figures/              # Generated visualizations
 ├── tests/                    # Unit tests
-├── requirements.txt          # Python dependencies
-├── pyproject.toml           # Project configuration
+├── pyproject.toml            # Project configuration and dependencies
 └── README.md
 ```
 
@@ -59,9 +58,10 @@ phishing-brand-classifier/
 ### Prerequisites
 
 - Python 3.9+
+- [uv](https://docs.astral.sh/uv/) (recommended) or pip
 - CUDA 11.0+ (optional, for GPU acceleration)
 
-### Setup
+### Setup with uv (Recommended)
 
 1. Clone the repository:
 ```bash
@@ -69,20 +69,20 @@ git clone https://github.com/your-username/phishing-brand-classifier.git
 cd phishing-brand-classifier
 ```
 
-2. Create and activate a virtual environment:
+2. Install dependencies with uv:
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+uv sync
 ```
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-4. Download the dataset:
+3. Download the dataset:
 ```bash
 aws s3 cp s3://phishing-detection-homework-public-bucket data/raw --recursive --no-sign-request
+```
+
+### Alternative Setup with pip
+
+```bash
+pip install -e .
 ```
 
 ## Usage
@@ -91,14 +91,14 @@ aws s3 cp s3://phishing-detection-homework-public-bucket data/raw --recursive --
 
 Run the EDA notebook to understand the dataset:
 ```bash
-jupyter notebook notebooks/01_exploratory_data_analysis.ipynb
+uv run jupyter notebook notebooks/01_exploratory_data_analysis.ipynb
 ```
 
 ### 2. Feature Engineering
 
 Prepare the data for training:
 ```bash
-jupyter notebook notebooks/02_feature_engineering.ipynb
+uv run jupyter notebook notebooks/02_feature_engineering.ipynb
 ```
 
 This will create train/validation/test splits in `data/processed/`.
@@ -107,12 +107,12 @@ This will create train/validation/test splits in `data/processed/`.
 
 #### Using the notebook:
 ```bash
-jupyter notebook notebooks/03_model_training.ipynb
+uv run jupyter notebook notebooks/03_model_training.ipynb
 ```
 
 #### Using the command line:
 ```bash
-python -m src.train \
+uv run python -m src.train \
     --config configs/config.yaml \
     --data-dir data/raw \
     --output-dir outputs \
@@ -123,7 +123,7 @@ python -m src.train \
 
 #### Single image prediction:
 ```bash
-python -m src.predict \
+uv run python -m src.predict \
     path/to/screenshot.png \
     --checkpoint outputs/models/best_model.pt \
     --threshold 0.85
@@ -131,7 +131,7 @@ python -m src.predict \
 
 #### With top-k predictions:
 ```bash
-python -m src.predict \
+uv run python -m src.predict \
     path/to/screenshot.png \
     --checkpoint outputs/models/best_model.pt \
     --top-k 3
@@ -139,7 +139,7 @@ python -m src.predict \
 
 #### Benchmark inference speed:
 ```bash
-python -m src.predict \
+uv run python -m src.predict \
     path/to/screenshot.png \
     --checkpoint outputs/models/best_model.pt \
     --benchmark
@@ -154,12 +154,12 @@ export MODEL_CHECKPOINT=outputs/models/best_model.pt
 export CONFIDENCE_THRESHOLD=0.85
 
 # Run the server
-uvicorn src.api.app:app --host 0.0.0.0 --port 8000
+uv run uvicorn src.api.app:app --host 0.0.0.0 --port 8000
 ```
 
 Or using the module:
 ```bash
-python -m src.api.app
+uv run python -m src.api.app
 ```
 
 #### API Endpoints

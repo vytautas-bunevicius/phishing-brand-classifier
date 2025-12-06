@@ -5,8 +5,6 @@ from typing import Dict, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-import torch
-from PIL import Image
 
 
 def plot_confusion_matrix(
