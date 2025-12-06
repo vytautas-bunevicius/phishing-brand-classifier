@@ -1,9 +1,6 @@
 # Project-specific ignores
-data/raw/
-data/processed/*.csv
-outputs/models/
-outputs/logs/
-outputs/figures/
+data/
+outputs/
 *.pt
 *.pth
 *.onnx
