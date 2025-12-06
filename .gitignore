@@ -1,3 +1,13 @@
+# Project-specific ignores
+data/raw/
+data/processed/*.csv
+outputs/models/
+outputs/logs/
+outputs/figures/
+*.pt
+*.pth
+*.onnx
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
