@@ -7,7 +7,7 @@ name = "phishing-brand-classifier"
 version = "1.0.0"
 description = "Deep learning system for detecting phishing websites through brand classification"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "Unlicense"}
 requires-python = ">=3.9"
 authors = [
     {name = "Vytautas Bunevicius", email = "vytautas.bunevicius@example.com"}
@@ -16,7 +16,7 @@ keywords = ["phishing", "detection", "deep-learning", "computer-vision", "cybers
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: The Unlicense (Unlicense)",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",

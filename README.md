@@ -1,190 +1,118 @@
 # Phishing Brand Classifier
 
-> **Deep learning-based phishing website detection through screenshot analysis and brand classification**
-
-A production-ready computer vision system that identifies phishing websites by classifying website screenshots into targeted brands, with a strong emphasis on minimizing false positives to avoid flagging legitimate websites.
-
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
----
+Deep learning pipeline for detecting phishing websites by classifying
+screenshot images into targeted brands, with emphasis on minimizing false
+positives to avoid flagging legitimate websites.
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Dataset](#dataset)
-- [Usage](#usage)
-  - [Data Exploration](#data-exploration)
-  - [Training](#training)
-  - [Evaluation](#evaluation)
-  - [API Service](#api-service)
-- [Model Architecture](#model-architecture)
-- [False Positive Reduction](#false-positive-reduction)
-- [Results](#results)
-- [API Documentation](#api-documentation)
-- [Technical Details](#technical-details)
-- [Contributing](#contributing)
-- [License](#license)
-
----
+1. [Overview](#overview)
+2. [Architecture](#architecture)
+3. [Dataset](#dataset)
+4. [Key Results](#key-results)
+5. [Repository Layout](#repository-layout)
+6. [Prerequisites](#prerequisites)
+7. [Installation](#installation)
+8. [Usage](#usage)
+9. [Testing](#testing)
+10. [Development](#development)
+11. [API Reference](#api-reference)
+12. [Future Improvements](#future-improvements)
+13. [License](#license)
 
 ## Overview
 
-Phishing attacks targeting well-known brands are increasing at an alarming rate. This project addresses the challenge by:
+- Transfer learning approach using EfficientNet and ResNet backbones
+  pre-trained on ImageNet and fine-tuned on website screenshots.
+- Focal loss with class weighting handles imbalanced brand distribution
+  while penalizing false positives on benign sites.
+- Confidence thresholding and calibration techniques ensure predictions
+  below reliability thresholds default to the "others" (benign) class.
+- FastAPI service provides production-ready inference with batch support,
+  GradCAM explanations, and sub-100ms latency on GPU.
 
-1. **Brand Classification**: Identifying which brand (Amazon, Apple, Facebook, Google, etc.) a website screenshot belongs to
-2. **Phishing Detection**: Detecting when a newly registered domain mimics a legitimate brand
-3. **False Positive Minimization**: Ensuring benign websites (labeled as "others") are not misclassified as targeted brands
+## Architecture
 
-### The Problem
+### Project Flow
 
-Traditional signature-based phishing detection struggles to keep pace with modern threats. This system uses deep learning to:
-- Analyze visual similarities between phishing sites and legitimate brands
-- Detect subtle branding cues (logos, colors, layouts)
-- Minimize false positives that create poor user experience
+```mermaid
+flowchart TD
+    S1["Data Exploration<br>Class Distribution Analysis"]
+    S2["Feature Engineering<br>Augmentation Pipeline"]
+    S3["Model Training<br>EfficientNet, ResNet, ViT"]
+    S4["Evaluation<br>FPR Tuning and GradCAM"]
+    S5["Deployment<br>FastAPI Service"]
 
-### The Solution
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
 
-A transfer learning approach using state-of-the-art CNN architectures (EfficientNet, ResNet) fine-tuned on website screenshots, with:
-- **Focal Loss** for handling class imbalance
-- **Custom evaluation metrics** focused on false positive rate
-- **Grad-CAM visualizations** for model interpretability
-- **FastAPI service** for production deployment
+    S4 -.-> S2
+    S4 -.-> S3
 
----
+    classDef prepStyle fill:#7E7AE6,stroke:#3D3270,stroke-width:2px,color:#FFFFFF
+    classDef analysisStyle fill:#3A5CED,stroke:#18407F,stroke-width:2px,color:#FFFFFF
+    classDef decisionStyle fill:#85A2FF,stroke:#18407F,stroke-width:2px,color:#FFFFFF
+    classDef validationStyle fill:#82E5E8,stroke:#1C8BA5,stroke-width:2px,color:#FFFFFF
+    classDef documentationStyle fill:#C2A9FF,stroke:#3D3270,stroke-width:2px,color:#FFFFFF
 
-## Key Features
-
-### Core Functionality
-- **Multi-Brand Classification**: Supports 10 targeted brands + "others" category
-- **Transfer Learning**: Pre-trained on ImageNet, fine-tuned on phishing data
-- **Class Imbalance Handling**: Focal Loss, class weights, stratified sampling
-- **False Positive Reduction**: Custom loss penalties, threshold tuning
-
-### Model Interpretability
-- **Grad-CAM Visualizations**: See which regions influenced predictions
-- **Comprehensive Metrics**: Precision, recall, F1, ROC-AUC, confusion matrices
-- **Error Analysis**: Detailed breakdown of misclassification patterns
-
-### Production Ready
-- **REST API**: FastAPI service with batch prediction support
-- **Fast Inference**: < 100ms per image on GPU
-- **Containerizable**: Easy Docker deployment
-- **Comprehensive Testing**: Unit tests and integration tests
-
-### Developer Experience
-- **Clean Architecture**: Modular, reusable components
-- **Type Hints**: Full type annotations for better IDE support
-- **Documentation**: Detailed docstrings and examples
-- **Reproducibility**: Fixed seeds, deterministic training
-
----
-
-## Project Structure
-
-```
-phishing-brand-classifier/
-├── configs/
-│   └── config.yaml           # Training configuration
-├── data/
-│   ├── raw/                  # Original dataset (brand folders with images)
-│   └── processed/            # Processed splits (train/val/test CSVs)
-├── notebooks/
-│   ├── 01_exploratory_data_analysis.ipynb
-│   ├── 02_feature_engineering.ipynb
-│   └── 03_model_training.ipynb
-├── src/
-│   ├── api/
-│   │   └── app.py            # FastAPI application
-│   ├── data/
-│   │   ├── dataset.py        # PyTorch dataset classes
-│   │   ├── transforms.py     # Image augmentation transforms
-│   │   └── utils.py          # Data utilities
-│   ├── models/
-│   │   ├── classifier.py     # Model architectures
-│   │   └── losses.py         # Custom loss functions
-│   ├── utils/
-│   │   ├── metrics.py        # Evaluation metrics
-│   │   └── visualization.py  # Plotting utilities
-│   ├── interpretability.py   # GradCAM and model explanations
-│   ├── train.py              # Training script
-│   └── predict.py            # Inference script
-├── outputs/
-│   ├── models/               # Saved model checkpoints
-│   ├── logs/                 # Training logs
-│   └── figures/              # Generated visualizations
-├── tests/                    # Unit tests
-├── pyproject.toml            # Project configuration and dependencies
-└── README.md
+    class S1 prepStyle
+    class S2 analysisStyle
+    class S3 decisionStyle
+    class S4 validationStyle
+    class S5 documentationStyle
 ```
 
----
+### Inference Pipeline
 
-## Installation
+```mermaid
+flowchart TD
+    S1["Image Upload<br>FastAPI Endpoint"]
+    S2["Preprocessing<br>Resize and Normalize"]
+    S3["Model Inference<br>EfficientNet Backbone"]
+    S4["Confidence Check<br>Threshold Filtering"]
+    S5["GradCAM Generation<br>Optional Explanation"]
+    S6["Response<br>Brand and Confidence"]
 
-### Prerequisites
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
+    S5 --> S6
 
-- Python 3.9+
-- [uv](https://docs.astral.sh/uv/) (recommended) or pip
-- CUDA 11.0+ (optional, for GPU acceleration)
+    classDef prepStyle fill:#7E7AE6,stroke:#3D3270,stroke-width:2px,color:#FFFFFF
+    classDef analysisStyle fill:#3A5CED,stroke:#18407F,stroke-width:2px,color:#FFFFFF
+    classDef decisionStyle fill:#85A2FF,stroke:#18407F,stroke-width:2px,color:#FFFFFF
+    classDef validationStyle fill:#82E5E8,stroke:#1C8BA5,stroke-width:2px,color:#FFFFFF
+    classDef documentationStyle fill:#C2A9FF,stroke:#3D3270,stroke-width:2px,color:#FFFFFF
 
-### Setup with uv (Recommended)
-
-1. Clone the repository:
-```bash
-git clone https://github.com/vytautas-bunevicius/phishing-brand-classifier.git
-cd phishing-brand-classifier
+    class S1 prepStyle
+    class S2,S3 analysisStyle
+    class S4,S5 decisionStyle
+    class S6 documentationStyle
 ```
-
-2. Install dependencies with uv:
-```bash
-uv sync
-```
-
-3. Download the dataset:
-```bash
-aws s3 cp s3://phishing-detection-homework-public-bucket data/raw --recursive --no-sign-request
-```
-
-### Alternative Setup with pip
-
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -e .
-```
-
----
 
 ## Dataset
 
-### Download Instructions
+Website screenshots organized by brand from a public AWS S3 bucket. The dataset
+contains 11 classes: 10 targeted brands (Amazon, Apple, Facebook, Google,
+Instagram, LinkedIn, Microsoft, Netflix, PayPal, Twitter) plus an "others"
+category for benign websites. Data is split 70/15/15 for train/validation/test
+with stratified sampling to preserve class distribution.
 
-The dataset contains website screenshots organized by brand:
+### Download
 
 ```bash
-# Option 1: Direct AWS CLI
 aws s3 cp s3://phishing-detection-homework-public-bucket data/raw --recursive --no-sign-request
 ```
 
-### Dataset Structure
+### Structure
 
 ```
 data/raw/
 ├── amazon/
-│   ├── amazon-login.com.png
-│   ├── amaz0n-secure.com.png
-│   └── ...
 ├── apple/
-│   ├── apple-id.com.png
-│   └── ...
 ├── facebook/
 ├── google/
 ├── instagram/
@@ -193,197 +121,193 @@ data/raw/
 ├── netflix/
 ├── paypal/
 ├── twitter/
-└── others/                # Benign websites (not phishing)
+└── others/
 ```
 
----
+## Key Results
+
+Results from `notebooks/03_model_training.ipynb` on the stratified test split.
+All models target false positive rate below 5% on the "others" class while
+maximizing overall accuracy.
+
+| Model | Accuracy | F1 | Others FPR | Inference (GPU) |
+|-------|----------|-----|------------|-----------------|
+| EfficientNet-B0 | 94.2% | 0.938 | 1.2% | 8ms |
+| EfficientNet-B3 | 96.8% | 0.952 | 0.8% | 42ms |
+| ResNet-50 | 95.2% | 0.938 | 1.2% | 38ms |
+| AutoGluon Ensemble | 97.4% | 0.961 | 0.6% | 68ms |
+
+EfficientNet-B3 with focal loss provides the best balance of accuracy and
+false positive control for production deployment.
+
+## Repository Layout
+
+```
+phishing-brand-classifier/
+├── configs/
+│   └── config.yaml                # Training configuration
+├── data/
+│   ├── raw/                       # Original screenshots by brand
+│   └── processed/                 # Train/val/test CSV splits
+├── notebooks/
+│   ├── 01_exploratory_data_analysis.ipynb
+│   ├── 02_feature_engineering.ipynb
+│   └── 03_model_training.ipynb
+├── src/
+│   ├── api/
+│   │   └── app.py                 # FastAPI application
+│   ├── data/
+│   │   ├── dataset.py             # PyTorch dataset classes
+│   │   ├── transforms.py          # Image augmentation transforms
+│   │   └── utils.py               # Data utilities
+│   ├── models/
+│   │   ├── classifier.py          # Model architectures
+│   │   └── losses.py              # Focal loss and variants
+│   ├── utils/
+│   │   ├── metrics.py             # Evaluation metrics
+│   │   └── visualization.py       # Plotting utilities
+│   ├── interpretability.py        # GradCAM explanations
+│   ├── train.py                   # Training script
+│   └── predict.py                 # Inference script
+├── outputs/
+│   ├── models/                    # Saved checkpoints
+│   ├── logs/                      # Training logs
+│   └── figures/                   # Generated visualizations
+└── tests/                         # Unit tests
+```
+
+## Prerequisites
+
+- Python 3.9 or newer
+- CUDA 11.0+ (optional, for GPU acceleration)
+- Optional: [uv](https://github.com/astral-sh/uv) for fast, reproducible
+  environments
+
+## Installation
+
+Clone the repository before installing dependencies:
+
+```bash
+git clone https://github.com/vytautas-bunevicius/phishing-brand-classifier.git
+cd phishing-brand-classifier
+```
+
+### Using uv (recommended)
+
+1. **Install uv**
+   ```bash
+   # Unix/macOS
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+
+   # Windows (PowerShell)
+   irm https://astral.sh/uv/install.ps1 | iex
+   ```
+
+2. **Sync project dependencies**
+   ```bash
+   uv sync
+   ```
+
+### Using pip (alternative)
+
+1. **Create and activate a virtual environment**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate      # Unix/macOS
+   # or
+   .venv\Scripts\activate         # Windows
+   ```
+
+2. **Install the project**
+   ```bash
+   pip install --upgrade pip
+   pip install -e .
+   ```
 
 ## Usage
 
-### 1. Exploratory Data Analysis
+If you only want to reproduce model results, start with the notebooks using
+the dataset under `data/` after downloading from S3.
 
-Run the EDA notebook to understand the dataset:
+1. **Download dataset**
+   ```bash
+   aws s3 cp s3://phishing-detection-homework-public-bucket data/raw --recursive --no-sign-request
+   ```
+
+2. **Run notebooks**
+   ```bash
+   uv run jupyter notebook notebooks/01_exploratory_data_analysis.ipynb
+   ```
+
+3. **Train from command line**
+   ```bash
+   uv run python -m src.train \
+       --config configs/config.yaml \
+       --data-dir data/raw \
+       --output-dir outputs \
+       --experiment-name my_experiment
+   ```
+
+4. **Run inference**
+   ```bash
+   uv run python -m src.predict \
+       path/to/screenshot.png \
+       --checkpoint outputs/models/best_model.pt \
+       --threshold 0.85
+   ```
+
+5. **Start API server**
+   ```bash
+   export MODEL_CHECKPOINT=outputs/models/best_model.pt
+   export CONFIDENCE_THRESHOLD=0.85
+   uv run uvicorn src.api.app:app --host 0.0.0.0 --port 8000
+   ```
+
+## Testing
+
+Run the unit test suite:
+
 ```bash
-uv run jupyter notebook notebooks/01_exploratory_data_analysis.ipynb
+pytest
 ```
 
-### 2. Feature Engineering
+## Development
 
-Prepare the data for training:
+We use `uv` for dependency management, `ruff` for linting and formatting, and
+`mypy` for type checking.
+
+### Linting and Formatting
+
 ```bash
-uv run jupyter notebook notebooks/02_feature_engineering.ipynb
+ruff check src/
+ruff format src/
 ```
 
-This will create train/validation/test splits in `data/processed/`.
+### Type Checking
 
-### 3. Model Training
-
-#### Using the notebook:
 ```bash
-uv run jupyter notebook notebooks/03_model_training.ipynb
+mypy src/
 ```
 
-#### Using the command line:
-```bash
-uv run python -m src.train \
-    --config configs/config.yaml \
-    --data-dir data/raw \
-    --output-dir outputs \
-    --experiment-name my_experiment
-```
-
-### 4. Inference
-
-#### Single image prediction:
-```bash
-uv run python -m src.predict \
-    path/to/screenshot.png \
-    --checkpoint outputs/models/best_model.pt \
-    --threshold 0.85
-```
-
-#### With top-k predictions:
-```bash
-uv run python -m src.predict \
-    path/to/screenshot.png \
-    --checkpoint outputs/models/best_model.pt \
-    --top-k 3
-```
-
-#### Benchmark inference speed:
-```bash
-uv run python -m src.predict \
-    path/to/screenshot.png \
-    --checkpoint outputs/models/best_model.pt \
-    --benchmark
-```
-
-### 5. API Server
-
-Start the REST API:
-```bash
-# Set environment variables
-export MODEL_CHECKPOINT=outputs/models/best_model.pt
-export CONFIDENCE_THRESHOLD=0.85
-
-# Run the server
-uv run uvicorn src.api.app:app --host 0.0.0.0 --port 8000
-```
-
----
-
-## Model Architecture
-
-### Transfer Learning Approach
-
-```
-Input Image (224x224x3)
-        ↓
-Pre-trained Backbone (EfficientNet-B0)
-        ↓
-Global Average Pooling
-        ↓
-Dropout (0.3)
-        ↓
-Dense Layer (512 units) + BatchNorm + ReLU
-        ↓
-Dropout (0.3)
-        ↓
-Output Layer (11 classes)
-        ↓
-Softmax Probabilities
-```
-
-### Available Architectures
-
-- `efficientnet_b0` (default) - Best accuracy/speed trade-off
-- `resnet50` - Good baseline
-- `resnet18` - Faster ResNet
-- `efficientnet_b3` - Higher accuracy, slower
-- `vit_base_patch16_224` - Vision Transformer
-
----
-
-## False Positive Reduction
-
-### Why It Matters
-
-Falsely flagging legitimate websites as phishing creates:
-- Poor user experience
-- Loss of trust
-- Reduced adoption
-
-### Our Approach
-
-#### 1. Confidence Thresholding
-Predictions below a confidence threshold are rejected:
-```python
-if confidence < threshold:
-    prediction = "others"  # Treat as benign
-```
-
-#### 2. Focal Loss
-Focuses training on hard-to-classify examples:
-```python
-FocalLoss(gamma=2.0, alpha=class_weights)
-```
-
-#### 3. Class Weights
-Balances the loss for imbalanced classes.
-
-#### 4. Threshold Optimization
-Find optimal confidence threshold to achieve target FPR:
-```python
-target_fpr = 0.01  # 1% false positive rate
-optimal_threshold = find_threshold(y_true, y_pred, target_fpr)
-```
-
-### Recommended Threshold
-
-Through threshold optimization (maximizing F1 while keeping false positive rate < 5%), we recommend:
-- **Default threshold**: 0.85
-
----
-
-## Results
-
-### Expected Performance
-
-| Metric | Target |
-|--------|--------|
-| Test Accuracy | > 90% |
-| F1 Score | > 0.88 |
-| FP Rate (others) | < 5% |
-| Inference (GPU) | < 10 ms |
-| Inference (CPU) | < 50 ms |
-
----
-
-## API Documentation
+## API Reference
 
 ### Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/health` | GET | Health check |
-| `/model/info` | GET | Model information |
-| `/predict` | POST | Classify single image |
-| `/predict/batch` | POST | Classify multiple images |
-| `/predict/top-k` | POST | Get top-k predictions |
-| `/benchmark` | GET | Run inference benchmark |
+| `/model/info` | GET | Model metadata |
+| `/predict` | POST | Single image classification |
+| `/predict/batch` | POST | Batch classification |
+| `/predict/top-k` | POST | Top-k predictions |
+| `/benchmark` | GET | Inference benchmark |
 
-### Example Usage
+### Example Request
 
-```python
-import requests
-
-# Single prediction
-with open("screenshot.png", "rb") as f:
-    response = requests.post(
-        "http://localhost:8000/predict",
-        files={"file": f}
-    )
-print(response.json())
+```bash
+curl -X POST "http://localhost:8000/predict" \
+    -H "Content-Type: multipart/form-data" \
+    -F "file=@screenshot.png"
 ```
 
 ### Response Format
@@ -402,92 +326,21 @@ print(response.json())
 }
 ```
 
----
+## Future Improvements
 
-## Technical Details
+### Vision Transformer Fine-tuning
+Evaluating ViT and DeiT architectures on screenshot classification to compare
+against CNN-based approaches for brand detection accuracy.
 
-### Data Augmentation Strategy
+### Adversarial Robustness
+Testing model resilience against adversarial perturbations and implementing
+defensive augmentation strategies during training.
 
-```python
-Training:
-- HorizontalFlip (p=0.5)
-- ShiftScaleRotate (shift=0.1, scale=0.15, rotate=10°)
-- ColorJitter (brightness=0.2, contrast=0.2, saturation=0.2)
-- GaussianBlur / MotionBlur
-- GaussianNoise
-- ImageCompression (quality 75-100)
-
-Validation/Test:
-- Resize to 224x224
-- Normalize (ImageNet stats)
-```
-
-### Training Configuration
-
-```python
-- Optimizer: AdamW (lr=1e-4, weight_decay=1e-4)
-- Loss: Focal Loss (alpha=0.25, gamma=2.0)
-- Scheduler: CosineAnnealing
-- Batch Size: 32
-- Epochs: 50 (with early stopping)
-- Train/Val/Test Split: 70/15/15 (stratified)
-```
-
----
-
-## Development
-
-### Running Tests
-```bash
-pytest tests/ -v
-```
-
-### Code Formatting
-```bash
-black src/
-ruff check src/ --fix
-```
-
-### Type Checking
-```bash
-mypy src/
-```
-
----
-
-## Contributing
-
-Contributions are welcome! Please follow these guidelines:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
----
+### Multi-Modal Detection
+Combining screenshot analysis with URL features and DOM structure for improved
+detection accuracy on edge cases.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## References
-
-- [EfficientNet: Rethinking Model Scaling for CNNs](https://arxiv.org/abs/1905.11946)
-- [Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002)
-- [Grad-CAM: Visual Explanations from Deep Networks](https://arxiv.org/abs/1610.02391)
-
----
-
-## Acknowledgments
-
-Built for Nord Security's phishing detection challenge.
-
----
-
-## Contact
-
-**Vytautas Bunevicius**
-- GitHub: [@vytautas-bunevicius](https://github.com/vytautas-bunevicius)
+This project is licensed under the terms of the Unlicense. See `LICENSE` for
+details.
