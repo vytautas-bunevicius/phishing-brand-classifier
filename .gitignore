@@ -230,3 +230,5 @@ temp/
 .env
 .env.local
 .env.*.local
+.idea/
+settings.local.json

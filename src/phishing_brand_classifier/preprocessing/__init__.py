@@ -1,6 +1,6 @@
 """Data preprocessing and augmentation."""
 
-from .dataset import PhishingDataset, create_dataloaders
-from .transforms import get_transforms
+from .phishing_dataset import PhishingDataset, create_dataloaders
+from .image_augmentation import get_transforms
 
 __all__ = ['PhishingDataset', 'create_dataloaders', 'get_transforms']

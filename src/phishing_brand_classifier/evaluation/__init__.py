@@ -1,7 +1,7 @@
 """Evaluation metrics and visualization."""
 
 from .metrics import MetricsCalculator, calculate_optimal_threshold
-from .visualization import (
+from .plotting import (
     plot_confusion_matrix,
     plot_roc_curves,
     plot_training_history,
